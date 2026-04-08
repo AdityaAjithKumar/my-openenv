@@ -1,0 +1,19 @@
+{
+  "model": "llama-3.1-8b-instant",
+  "api_base": "https://api.groq.com/openai/v1",
+  "scores": {
+    "easy": {
+      "score": 0.532,
+      "success": true
+    },
+    "medium": {
+      "score": 0.425,
+      "success": false
+    },
+    "hard": {
+      "score": 0.32999999999999996,
+      "success": false
+    }
+  },
+  "runtime_seconds": 83.11800956726074
+}
