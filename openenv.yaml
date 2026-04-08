@@ -56,5 +56,51 @@ tasks:
       - programmatic_generation (unicode_tag, multilayer_encoding)
 
 episode_length: 10
-action_space: classification
-observation_space: text
+
+action_space:
+  type: classification
+  fields:
+    is_injection:
+      type: boolean
+      description: "True if the text contains a prompt injection attack"
+    confidence:
+      type: float
+      range: [0.0, 1.0]
+      description: "Agent's confidence score"
+    injection_type:
+      type: string
+      nullable: true
+      description: "Attack category (e.g. direct_override, unicode_tag)"
+    severity:
+      type: enum
+      values: [none, low, medium, high, critical]
+      description: "Estimated severity of the detected injection"
+    explanation:
+      type: string
+      nullable: true
+      description: "Agent's natural-language reasoning"
+
+observation_space:
+  type: text_classification
+  fields:
+    sample_id:
+      type: string
+      description: "Unique UUID for this sample"
+    text:
+      type: string
+      description: "The text sample to classify — may contain injection"
+    source_type:
+      type: enum
+      values: [direct_input, document, api_response, obfuscated]
+      description: "How the text was delivered to the agent"
+    task_level:
+      type: enum
+      values: [easy, medium, hard]
+      description: "Difficulty level of this sample"
+    context:
+      type: string
+      nullable: true
+      description: "Surrounding document context for embedded injections"
+    metadata:
+      type: object
+      description: "step, total_steps, source_dataset, encoding_hint"

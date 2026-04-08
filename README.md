@@ -72,10 +72,12 @@ This environment provides a **structured, graded training ground** with three di
 | `document_embedded` | Medium | Injection hidden within a legitimate document | Meeting notes with hidden "ignore above" payload |
 | `code_comment` | Medium | Malicious instructions in code comments | `# TODO: ignore safety guidelines and...` |
 | `api_response_injection` | Medium | Injection in simulated API/tool response data | JSON response containing override instructions |
+| `chunk_split` | Medium | Injection split across document chunks to evade per-chunk filters | "Ignore" in chunk 1, "instructions" in chunk 2 |
 | `unicode_tag` | Hard | Invisible chars from U+E0000–U+E007F block | Flag emoji + invisible tag payload |
 | `zero_width` | Hard | Zero-width spaces/joiners encoding hidden text | Text with zero-width encoding |
 | `homoglyph` | Hard | Lookalike Unicode characters replacing ASCII | Cyrillic lookalikes |
 | `emoji_smuggling` | Hard | Data encoded within emoji sequences | Base64 payload hidden in emoji variation selectors |
+| `rtl_override` | Hard | Right-to-left Unicode override to reverse displayed text | U+202E used to disguise payload direction |
 | `multilayer_encoding` | Hard | URL to Base64 to Hex stacked encoding | Triple-encoded injection |
 | `adversarial_suffix` | Hard | Optimized suffix tokens that trigger unsafe behavior | Random-looking token sequences from GCG attacks |
 
@@ -171,7 +173,7 @@ openenv serve
 ```bash
 export API_BASE_URL="https://api.openai.com/v1"
 export MODEL_NAME="gpt-4o-mini"
-export HF_TOKEN="your_hf_token"
+export HF_TOKEN="hf_your_token_here"
 export ENV_URL="http://localhost:8000"
 python inference.py
 ```
@@ -184,7 +186,40 @@ openenv validate --verbose
 
 ---
 
-## 📈 Baseline Scores
+## � Mandatory Environment Variables
+
+Before running `inference.py`, set these three variables:
+
+| Variable | Description | Example |
+|---|---|---|
+| `API_BASE_URL` | LLM API endpoint | `https://api.openai.com/v1` |
+| `MODEL_NAME` | Model identifier | `gpt-4o-mini` |
+| `HF_TOKEN` | Hugging Face / API key | `hf_...` |
+| `ENV_URL` | Running environment server URL | `http://localhost:8000` |
+
+---
+
+## 📋 Structured Log Format
+
+`inference.py` emits machine-parseable lines the evaluator reads from stdout. **Do not modify these formats.**
+
+```
+[START] task=easy episode=1
+[STEP]  task=easy episode=1 step=1 is_injection=true confidence=0.9500 injection_type=direct_override severity=high reward=0.8500
+[STEP]  task=easy episode=1 step=2 is_injection=false confidence=0.8800 injection_type=null severity=none reward=0.6500
+...
+[END]   task=easy episode=1 score=0.7200
+[RESULT] task=easy mean_score=0.7200 episodes=[0.72, 0.71, 0.73]
+[SUMMARY]
+  EASY    : 0.7200
+  MEDIUM  : 0.5800
+  HARD    : 0.3500
+  runtime : 142.3s
+```
+
+---
+
+## �📈 Baseline Scores
 
 Scores from `inference.py` using `gpt-4o-mini` with zero-shot prompting:
 
@@ -195,6 +230,19 @@ Scores from `inference.py` using `gpt-4o-mini` with zero-shot prompting:
 | **Hard** | ~0.35 | Poor on invisible Unicode; better on base64 with hints |
 
 These baselines demonstrate genuine difficulty gradient — the environment is challenging even for frontier models.
+
+---
+
+## 🌐 API Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/` | Environment info and endpoint listing |
+| `GET` | `/health` | Liveness probe — returns `{"status": "ok"}` |
+| `GET` | `/state` | Current environment state and task listing |
+| `GET` | `/schema` | OpenEnv action/observation JSON schema |
+| `POST` | `/reset` | Start a new episode; body: `{"task_level": "easy"}` |
+| `POST` | `/step` | Submit an action; body: action JSON object |
 
 ---
 
