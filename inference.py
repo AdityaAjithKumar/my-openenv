@@ -26,7 +26,7 @@ from openai import OpenAI
 # ---------------------------------------------------------------------------
 API_BASE_URL = os.environ.get("API_BASE_URL")
 MODEL_NAME   = os.environ.get("MODEL_NAME",   "gpt-4o-mini")
-API_KEY      = os.environ.get("API_KEY") or os.environ.get("HF_TOKEN")
+API_KEY      = os.environ.get("API_KEY")
 ENV_BASE_URL = os.environ.get("ENV_URL",      "http://localhost:8000")
 
 BENCHMARK             = "prompt-injection-detector"
@@ -39,7 +39,7 @@ def _require_env() -> None:
     missing = []
     if not os.environ.get("API_BASE_URL"):
         missing.append("API_BASE_URL")
-    if not (os.environ.get("API_KEY") or os.environ.get("HF_TOKEN")):
+    if not os.environ.get("API_KEY"):
         missing.append("API_KEY")
     if missing:
         # Keep stdout reserved for structured evaluator logs.
